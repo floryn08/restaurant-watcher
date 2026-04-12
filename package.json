@@ -1,18 +1,31 @@
 {
   "name": "restaurant-watcher",
   "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
+  "description": "Watches a geographic area for restaurant openings and closures using Google Places API",
+  "license": "MIT",
   "author": "",
   "type": "module",
-  "main": "watcher.ts",
+  "main": "dist/watcher.js",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start": "node dist/watcher.js",
+    "dev": "tsx src/watcher.ts",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "fs": "^0.0.1-security"
+    "dotenv": "16.4.5"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0"
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/git": "10.0.1",
+    "@semantic-release/github": "10.0.0",
+    "@semantic-release/npm": "12.0.0",
+    "@types/node": "24.0.0",
+    "semantic-release": "24.0.0",
+    "tsx": "4.19.0",
+    "typescript": "6.0.2"
   }
 }

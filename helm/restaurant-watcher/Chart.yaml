@@ -1,0 +1,6 @@
+apiVersion: v2
+name: restaurant-watcher
+description: A CronJob that scans a geographic area for restaurant openings and closures using Google Places API
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

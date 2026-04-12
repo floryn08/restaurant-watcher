@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+*.md
+.git
+.github
+helm
+city_center_registry.json

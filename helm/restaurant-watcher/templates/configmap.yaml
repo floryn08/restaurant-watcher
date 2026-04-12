@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "restaurant-watcher.name" . }}-config
+  labels:
+    {{- include "restaurant-watcher.labels" . | nindent 4 }}
+data:
+  SW_LAT: {{ .Values.config.swLat | quote }}
+  SW_LNG: {{ .Values.config.swLng | quote }}
+  NE_LAT: {{ .Values.config.neLat | quote }}
+  NE_LNG: {{ .Values.config.neLng | quote }}
+  GRID_SIZE: {{ .Values.config.gridSize | quote }}
+  DATA_FILE: {{ .Values.config.dataFile | quote }}
+  OLLAMA_HOST: {{ .Values.config.ollamaHost | quote }}
+  OLLAMA_MODEL: {{ .Values.config.ollamaModel | quote }}
