@@ -16,7 +16,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "dotenv": "16.4.5"
+    "dotenv": "16.6.1"
   },
   "devDependencies": {
     "@semantic-release/changelog": "6.0.3",
