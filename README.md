@@ -11,7 +11,8 @@ Runs as a Kubernetes **CronJob** every Monday at 04:00 UTC, packaged as a Helm c
 1. Divides the bounding box into an N×N grid and calls the Places Text Search API on each cell
 2. Compares the results against a persisted registry JSON from the previous run
 3. For every place that disappeared, makes a direct Places Details call to confirm it is permanently closed ("Ghost Hunter" check)
-4. If anything changed, prompts Ollama to write a short announcement and posts it to Discord via webhook
+4. On the first run, seeds the registry without sending a notification unless `NOTIFY_ON_INITIAL_SCAN=true`
+5. If anything changed on later runs, prompts Ollama to write a Romanian bullet-list announcement with emojis and posts it to Discord via webhook
 
 ---
 
@@ -55,9 +56,12 @@ All configuration is via environment variables. Copy `.env.example` to `.env` fo
 | `DATA_FILE` | No | `/data/city_center_registry.json` | Path for the persisted registry JSON |
 | `OLLAMA_HOST` | No | `http://localhost:11434` | Ollama base URL |
 | `OLLAMA_MODEL` | No | `llama3.2` | Ollama model to use for announcements |
+| `REQUEST_TIMEOUT_MS` | No | `30000` | Timeout for Google Places and Discord HTTP requests, in milliseconds |
+| `OLLAMA_TIMEOUT_MS` | No | `60000` | Timeout for the Ollama generation request, in milliseconds |
+| `NOTIFY_ON_INITIAL_SCAN` | No | `false` | Set to `true` to announce every restaurant found on the first scan instead of only seeding the registry |
 | `DISCORD_WEBHOOK_URL` | No | — | Discord webhook URL — omit to skip notifications |
 
-> **Tip:** If a grid sector returns exactly 20 results the script warns you — the Places API caps responses at 20. Increase `GRID_SIZE` to subdivide that area further.
+> **Tip:** If a grid sector returns exactly 20 results, the script subdivides that cell because the Places API caps responses at 20. Increase `GRID_SIZE` for a finer initial scan, at the cost of more API calls.
 
 ---
 
@@ -66,11 +70,11 @@ All configuration is via environment variables. Copy `.env.example` to `.env` fo
 ### Prerequisites
 
 - [Vault Secrets Operator](https://developer.hashicorp.com/vault/docs/platform/k8s/vso) installed in the cluster
-- A `VaultAuth` resource named `default` in the target namespace
-- The following secrets written to Vault at `secret/restaurant-watcher/config`:
+- A `VaultAuth` resource named `vaultauth-utility-services` in the target namespace, or override `vault.vaultAuthRef`
+- The following keys written to Vault at `kv/utility-services/restaurant-watcher`, or override `vault.mount` / `vault.path`:
 
 ```sh
-vault kv put secret/restaurant-watcher/config \
+vault kv put kv/utility-services/restaurant-watcher \
   GOOGLE_MAPS_API_KEY=<your-key> \
   DISCORD_WEBHOOK_URL=<your-webhook>
 ```
@@ -97,17 +101,29 @@ helm install restaurant-watcher \
   -f my-values.yaml
 ```
 
+The pod receives non-secret configuration from a ConfigMap. Secret values are wired explicitly from the Vault-synced Kubernetes Secret so the required Vault keys are visible in the rendered manifest:
+
+| Environment variable | Kubernetes Secret key | Required |
+|---|---|---|
+| `GOOGLE_MAPS_API_KEY` | `GOOGLE_MAPS_API_KEY` | Yes |
+| `DISCORD_WEBHOOK_URL` | `DISCORD_WEBHOOK_URL` | No |
+
 ### Key Helm values
 
 | Value | Default | Description |
 |---|---|---|
-| `image.repository` | `ghcr.io/OWNER/restaurant-watcher` | Container image |
-| `image.tag` | `latest` | Image tag |
+| `image.repository` | `ghcr.io/floryn08/restaurant-watcher` | Container image |
+| `image.tag` | `""` | Image tag. Empty means use the chart `appVersion` |
+| `namespace` | `utility-services` | Namespace for rendered resources |
 | `schedule` | `0 4 * * 1` | Cron schedule (Monday 04:00 UTC) |
+| `activeDeadlineSeconds` | `1800` | Maximum runtime for each Job |
+| `ttlSecondsAfterFinished` | `86400` | How long completed Jobs are retained |
 | `config.*` | see `values.yaml` | Non-secret configuration |
-| `vault.mount` | `secret` | Vault KV mount |
-| `vault.path` | `restaurant-watcher/config` | Path within the mount |
-| `vault.vaultAuthRef` | `default` | Name of the `VaultAuth` resource |
+| `vault.enabled` | `true` | Render the VaultStaticSecret and secret-backed environment variables |
+| `vault.mount` | `kv` | Vault KV mount |
+| `vault.path` | `utility-services/restaurant-watcher` | Path within the mount |
+| `vault.vaultAuthRef` | `vaultauth-utility-services` | Name of the `VaultAuth` resource |
+| `vault.destination.name` | `restaurant-watcher` | Kubernetes Secret created by Vault Secrets Operator |
 | `persistence.size` | `100Mi` | PVC size for the registry JSON |
 
 ---
@@ -116,7 +132,7 @@ helm install restaurant-watcher \
 
 | Trigger | Workflow | What happens |
 |---|---|---|
-| Pull request → `master` | `ci.yml` | Type-check + build |
+| Pull request / push → `master` | `ci.yml` | Type-check, build, Helm lint, Helm render |
 | Push to `master` | `release.yml` | Semantic release → Docker image pushed to GHCR → Helm chart pushed to GHCR as OCI artifact |
 
 Versioning follows [Conventional Commits](https://www.conventionalcommits.org):
@@ -124,5 +140,7 @@ Versioning follows [Conventional Commits](https://www.conventionalcommits.org):
 | Commit prefix | Release type |
 |---|---|
 | `fix:` | Patch |
+| `chore:` | Patch |
+| `refactor:` | Patch |
 | `feat:` | Minor |
 | `feat!:` / `BREAKING CHANGE:` | Major |

@@ -2,5 +2,34 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "Group non-major npm dependency updates",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "npm dependencies"
+    },
+    {
+      "description": "Group major npm dependency updates",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "npm major dependencies"
+    },
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    },
+    {
+      "description": "Group Docker image updates",
+      "matchManagers": ["dockerfile"],
+      "groupName": "docker images"
+    },
+    {
+      "description": "Group Helm chart updates",
+      "matchManagers": ["helmv3"],
+      "groupName": "helm charts"
+    }
   ]
 }

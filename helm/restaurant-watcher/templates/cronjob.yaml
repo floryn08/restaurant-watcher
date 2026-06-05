@@ -35,10 +35,20 @@ spec:
               envFrom:
                 - configMapRef:
                     name: {{ include "restaurant-watcher.name" . }}-config
-                {{- if .Values.vault.enabled }}
-                - secretRef:
-                    name: {{ .Values.vault.destination.name }}
-                {{- end }}
+              {{- if .Values.vault.enabled }}
+              env:
+                - name: GOOGLE_MAPS_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.vault.destination.name }}
+                      key: GOOGLE_MAPS_API_KEY
+                - name: DISCORD_WEBHOOK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.vault.destination.name }}
+                      key: DISCORD_WEBHOOK_URL
+                      optional: true
+              {{- end }}
               securityContext:
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true
