@@ -63,4 +63,4 @@ spec:
           volumes:
             - name: data
               persistentVolumeClaim:
-                claimName: {{ include "restaurant-watcher.name" . }}-data
+                claimName: {{ .Release.Name }}-data

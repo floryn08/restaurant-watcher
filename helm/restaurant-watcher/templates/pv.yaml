@@ -1,0 +1,20 @@
+{{- if .Values.persistence.pv.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-data
+  labels:
+    {{- include "restaurant-watcher.labels" . | nindent 4 }}
+    app.kubernetes.io/component: data
+    restaurant-watcher.io/data-volume: {{ .Release.Name }}
+spec:
+  storageClassName: {{ .Values.persistence.pv.storageClass | quote }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistence.pv.reclaimPolicy }}
+  capacity:
+    storage: {{ .Values.persistence.size }}
+  accessModes:
+    - {{ .Values.persistence.accessMode }}
+  hostPath:
+    path: {{ .Values.persistence.pv.path | quote }}
+    type: {{ .Values.persistence.pv.type }}
+{{- end }}

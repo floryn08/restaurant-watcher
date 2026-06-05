@@ -30,6 +30,12 @@ persistence:
   storageClass: ""       # Leave empty to use the cluster default
   accessMode: ReadWriteOnce
   size: 100Mi
+  pv:
+    enabled: false
+    storageClass: manual
+    path: /srv/appdata/utility-services/restaurant-watcher
+    type: DirectoryOrCreate
+    reclaimPolicy: Retain
 
 # Vault Secrets Operator — VaultStaticSecret that syncs secrets into a K8s Secret.
 # The resulting secret exposes GOOGLE_MAPS_API_KEY and DISCORD_WEBHOOK_URL to the pod.

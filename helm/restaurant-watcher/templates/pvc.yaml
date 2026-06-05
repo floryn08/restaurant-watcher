@@ -1,16 +1,28 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "restaurant-watcher.name" . }}-data
+  name: {{ .Release.Name }}-data
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "restaurant-watcher.labels" . | nindent 4 }}
 spec:
+  {{- if .Values.persistence.pv.enabled }}
+  storageClassName: {{ .Values.persistence.pv.storageClass | quote }}
+  {{- else }}
   {{- with .Values.persistence.storageClass }}
   storageClassName: {{ . | quote }}
+  {{- end }}
   {{- end }}
   accessModes:
     - {{ .Values.persistence.accessMode }}
   resources:
     requests:
       storage: {{ .Values.persistence.size }}
+  {{- if .Values.persistence.pv.enabled }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "restaurant-watcher.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: data
+      restaurant-watcher.io/data-volume: {{ .Release.Name }}
+  {{- end }}

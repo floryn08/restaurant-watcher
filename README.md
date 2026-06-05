@@ -124,7 +124,10 @@ The pod receives non-secret configuration from a ConfigMap. Secret values are wi
 | `vault.path` | `utility-services/restaurant-watcher` | Path within the mount |
 | `vault.vaultAuthRef` | `vaultauth-utility-services` | Name of the `VaultAuth` resource |
 | `vault.destination.name` | `restaurant-watcher` | Kubernetes Secret created by Vault Secrets Operator |
-| `persistence.size` | `100Mi` | PVC size for the registry JSON |
+| `persistence.size` | `100Mi` | PVC/PV size for the registry JSON |
+| `persistence.pv.enabled` | `false` | Render a static hostPath PersistentVolume |
+| `persistence.pv.path` | `/srv/appdata/utility-services/restaurant-watcher` | Host path used when the static PV is enabled |
+| `persistence.pv.storageClass` | `manual` | StorageClass used by the static PV and matching PVC |
 
 ---
 
