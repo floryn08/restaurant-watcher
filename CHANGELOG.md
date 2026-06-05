@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/floryn08/restaurant-watcher/compare/v1.0.6...v1.0.7) (2026-06-05)
+
+
+### Bug Fixes
+
+* enhance PVC and PV configurations with static volume support ([fc4ccc4](https://github.com/floryn08/restaurant-watcher/commit/fc4ccc4a7aee5f067f03db7fbaea7d5cb649908f))
+
 ## [1.0.6](https://github.com/floryn08/restaurant-watcher/compare/v1.0.5...v1.0.6) (2026-06-05)
 
 ## [1.0.5](https://github.com/floryn08/restaurant-watcher/compare/v1.0.4...v1.0.5) (2026-06-05)
