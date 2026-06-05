@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "restaurant-watcher.name" . }}-config
+  namespace: {{ .Values.namespace }}
   labels:
     {{- include "restaurant-watcher.labels" . | nindent 4 }}
 data:
@@ -13,3 +14,6 @@ data:
   DATA_FILE: {{ .Values.config.dataFile | quote }}
   OLLAMA_HOST: {{ .Values.config.ollamaHost | quote }}
   OLLAMA_MODEL: {{ .Values.config.ollamaModel | quote }}
+  REQUEST_TIMEOUT_MS: {{ .Values.config.requestTimeoutMs | quote }}
+  OLLAMA_TIMEOUT_MS: {{ .Values.config.ollamaTimeoutMs | quote }}
+  NOTIFY_ON_INITIAL_SCAN: {{ .Values.config.notifyOnInitialScan | quote }}

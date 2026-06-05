@@ -1,22 +1,29 @@
 image:
-  # Replace OWNER with your GitHub username or organisation
-  repository: ghcr.io/OWNER/restaurant-watcher
-  tag: latest
-  pullPolicy: Always
+  repository: ghcr.io/floryn08/restaurant-watcher
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# Target namespace for rendered resources
+namespace: utility-services
 
 # Cron schedule — every Monday at 04:00 UTC
 schedule: "0 4 * * 1"
+activeDeadlineSeconds: 1800
+ttlSecondsAfterFinished: 86400
 
 # Non-secret configuration (bounding box, grid, file paths, Ollama)
 config:
-  swLat: "45.638"
-  swLng: "25.584"
-  neLat: "45.646"
-  neLng: "25.597"
+  swLat: "45.612356"
+  swLng: "25.566216"
+  neLat: "45.678301"
+  neLng: "25.664063"
   gridSize: "4"
   dataFile: "/data/city_center_registry.json"
-  ollamaHost: "http://ollama:11434"
-  ollamaModel: "llama3.2"
+  ollamaHost: "http://ollama.ai-services.svc:11434"
+  ollamaModel: "gemma4:e4b"
+  requestTimeoutMs: "30000"
+  ollamaTimeoutMs: "60000"
+  notifyOnInitialScan: "false"
 
 # PVC for the registry JSON that persists across CronJob runs
 persistence:
@@ -28,13 +35,15 @@ persistence:
 # The resulting secret exposes GOOGLE_MAPS_API_KEY and DISCORD_WEBHOOK_URL to the pod.
 # See: https://developer.hashicorp.com/vault/docs/platform/k8s/vso/api-reference#vaultstaticsecret
 vault:
-  type: kv-v2            # kv-v1 or kv-v2
-  mount: secret          # Vault KV mount path
-  path: restaurant-watcher/config   # Path within the mount
+  enabled: true
+  type: kv-v2
+  mount: kv
+  path: utility-services/restaurant-watcher
   refreshAfter: 1h
-  vaultAuthRef: default  # Name of the VaultAuth resource in the same namespace
+  vaultAuthRef: vaultauth-utility-services
   destination:
-    name: restaurant-watcher-secrets  # Name of the K8s Secret that VSO creates
+    name: restaurant-watcher
+    overwrite: true
 
 resources:
   requests:

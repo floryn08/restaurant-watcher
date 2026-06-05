@@ -29,7 +29,10 @@ jobs:
 
       - run: npm ci
 
-      - name: Type check & build
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build
         run: npm run build
 
       - name: Semantic Release
@@ -44,6 +47,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: v${{ needs.release.outputs.new_release_version }}
 
       - uses: docker/setup-buildx-action@v4
 
@@ -66,7 +71,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   helm:
-    needs: release
+    needs: [release, docker]
     if: needs.release.outputs.new_release_published == 'true'
     runs-on: ubuntu-latest
     env:
@@ -74,6 +79,8 @@ jobs:
       CHART_DIR: helm/restaurant-watcher
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: v${{ needs.release.outputs.new_release_version }}
 
       - name: Install Helm
         uses: azure/setup-helm@v5
@@ -83,6 +90,12 @@ jobs:
         run: |
           sed -i "s/^version:.*/version: ${VERSION}/" "${CHART_DIR}/Chart.yaml"
           sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" "${CHART_DIR}/Chart.yaml"
+
+      - name: Lint Helm chart
+        run: helm lint "${CHART_DIR}"
+
+      - name: Render Helm chart
+        run: helm template restaurant-watcher "${CHART_DIR}"
 
       - name: Log in to GHCR (OCI)
         run: |

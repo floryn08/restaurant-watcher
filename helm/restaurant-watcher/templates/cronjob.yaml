@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ include "restaurant-watcher.name" . }}
+  namespace: {{ .Values.namespace }}
   labels:
     {{- include "restaurant-watcher.labels" . | nindent 4 }}
 spec:
@@ -12,25 +13,38 @@ spec:
   jobTemplate:
     spec:
       backoffLimit: 2
+      activeDeadlineSeconds: {{ .Values.activeDeadlineSeconds }}
+      ttlSecondsAfterFinished: {{ .Values.ttlSecondsAfterFinished }}
       template:
         metadata:
           labels:
             {{- include "restaurant-watcher.labels" . | nindent 12 }}
         spec:
+          automountServiceAccountToken: false
           restartPolicy: OnFailure
           securityContext:
             runAsNonRoot: true
             runAsUser: 1001
             fsGroup: 1001
+            seccompProfile:
+              type: RuntimeDefault
           containers:
             - name: watcher
-              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               envFrom:
                 - configMapRef:
                     name: {{ include "restaurant-watcher.name" . }}-config
+                {{- if .Values.vault.enabled }}
                 - secretRef:
                     name: {{ .Values.vault.destination.name }}
+                {{- end }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
               resources:
                 {{- toYaml .Values.resources | nindent 16 }}
               volumeMounts:
