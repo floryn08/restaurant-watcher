@@ -35,11 +35,30 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Capture current release tag
+        id: before_release
+        run: |
+          echo "tag=$(git describe --tags --abbrev=0 2>/dev/null || true)" >> "$GITHUB_OUTPUT"
+
       - name: Semantic Release
-        id: semantic
-        uses: cycjimmy/semantic-release-action@v4
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Capture release outputs
+        id: semantic
+        run: |
+          git fetch --tags --force
+          previous_tag="${{ steps.before_release.outputs.tag }}"
+          current_tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+
+          if [ -n "$current_tag" ] && [ "$current_tag" != "$previous_tag" ]; then
+            echo "new_release_published=true" >> "$GITHUB_OUTPUT"
+            echo "new_release_version=${current_tag#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "new_release_published=false" >> "$GITHUB_OUTPUT"
+            echo "new_release_version=" >> "$GITHUB_OUTPUT"
+          fi
 
   docker:
     needs: release
