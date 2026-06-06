@@ -128,6 +128,8 @@ The pod receives non-secret configuration from a ConfigMap. Secret values are wi
 | `persistence.pv.enabled` | `false` | Render a static hostPath PersistentVolume |
 | `persistence.pv.path` | `/srv/appdata/utility-services/restaurant-watcher` | Host path used when the static PV is enabled |
 | `persistence.pv.storageClass` | `manual` | StorageClass used by the static PV and matching PVC |
+| `volumePermissions.enabled` | `true` | Run an init container that makes the data volume writable by UID/GID 1001 |
+| `volumePermissions.image` | `busybox:1.37` | Image used by the volume permission init container |
 
 ---
 

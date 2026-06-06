@@ -28,6 +28,23 @@ spec:
             fsGroup: 1001
             seccompProfile:
               type: RuntimeDefault
+          {{- if .Values.volumePermissions.enabled }}
+          initContainers:
+            - name: volume-permissions
+              image: {{ .Values.volumePermissions.image }}
+              imagePullPolicy: IfNotPresent
+              command:
+                - sh
+                - -c
+                - chown -R 1001:1001 /data
+              securityContext:
+                runAsUser: {{ .Values.volumePermissions.runAsUser }}
+                runAsNonRoot: false
+                allowPrivilegeEscalation: false
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+          {{- end }}
           containers:
             - name: watcher
               image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"

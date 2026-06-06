@@ -51,6 +51,11 @@ vault:
     name: restaurant-watcher
     overwrite: true
 
+volumePermissions:
+  enabled: true
+  image: busybox:1.37
+  runAsUser: 0
+
 resources:
   requests:
     cpu: 100m
