@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/floryn08/restaurant-watcher/compare/v1.1.0...v1.2.0) (2026-06-06)
+
+
+### Features
+
+* add min and max cell depth configuration for adaptive subdivision ([68f2bd1](https://github.com/floryn08/restaurant-watcher/commit/68f2bd15df5dcedf38ac8d89013f0bbbac8fc341))
+
 # [1.1.0](https://github.com/floryn08/restaurant-watcher/compare/v1.0.7...v1.1.0) (2026-06-06)
 
 
