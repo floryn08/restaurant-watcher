@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/floryn08/restaurant-watcher/compare/v1.0.7...v1.1.0) (2026-06-06)
+
+
+### Features
+
+* add init container for volume permissions management ([6cb2e96](https://github.com/floryn08/restaurant-watcher/commit/6cb2e962f887c06be0055106a23d74ff95e93ffe))
+
 ## [1.0.7](https://github.com/floryn08/restaurant-watcher/compare/v1.0.6...v1.0.7) (2026-06-05)
 
 
