@@ -18,6 +18,8 @@ config:
   neLat: "45.678301"
   neLng: "25.664063"
   gridSize: "4"
+  minCellDepth: "0"
+  maxCellDepth: "6"
   dataFile: "/data/city_center_registry.json"
   ollamaHost: "http://ollama.ai-services.svc:11434"
   ollamaModel: "gemma4:e4b"

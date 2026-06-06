@@ -16,9 +16,16 @@ const DISCORD_MAX_LENGTH = 2000;
 const SW = { lat: Number(process.env.SW_LAT), lng: Number(process.env.SW_LNG) };
 const NE = { lat: Number(process.env.NE_LAT), lng: Number(process.env.NE_LNG) };
 const GRID_SIZE = Number(process.env.GRID_SIZE) || 3;
+const MIN_CELL_DEPTH = Number(process.env.MIN_CELL_DEPTH) || 0;
+const MAX_CELL_DEPTH = Number(process.env.MAX_CELL_DEPTH) || 6;
 
 if (!API_KEY || isNaN(SW.lat) || isNaN(SW.lng) || isNaN(NE.lat) || isNaN(NE.lng)) {
   console.error('Missing required config: GOOGLE_MAPS_API_KEY, SW_LAT, SW_LNG, NE_LAT, NE_LNG');
+  process.exit(1);
+}
+
+if (MIN_CELL_DEPTH < 0 || MAX_CELL_DEPTH < 0 || MIN_CELL_DEPTH > MAX_CELL_DEPTH) {
+  console.error('Invalid scan depth config: MIN_CELL_DEPTH and MAX_CELL_DEPTH must be non-negative, and MIN_CELL_DEPTH must be <= MAX_CELL_DEPTH');
   process.exit(1);
 }
 
@@ -171,10 +178,20 @@ async function scanCell(
   const results = await searchSquare(lowLat, lowLng, highLat, highLng);
   results.forEach(p => found.set(p.id, p));
 
-  if (results.length < 20) return;
+  const shouldForceSubdivision = depth < MIN_CELL_DEPTH;
+  const isSaturated = results.length >= 20;
 
-  // Hit the cap — subdivide into 4 quadrants and recurse
-  console.log(`${'  '.repeat(depth)}Cell [${lowLat.toFixed(5)},${lowLng.toFixed(5)}] saturated (${results.length} results) — subdividing...`);
+  if (!shouldForceSubdivision && !isSaturated) return;
+
+  if (depth >= MAX_CELL_DEPTH) {
+    if (isSaturated) {
+      console.warn(`${'  '.repeat(depth)}Cell [${lowLat.toFixed(5)},${lowLng.toFixed(5)}] still saturated at max depth ${MAX_CELL_DEPTH}; results may be incomplete.`);
+    }
+    return;
+  }
+
+  const reason = shouldForceSubdivision ? `minimum depth ${MIN_CELL_DEPTH}` : `${results.length} results`;
+  console.log(`${'  '.repeat(depth)}Cell [${lowLat.toFixed(5)},${lowLng.toFixed(5)}] subdividing (${reason})...`);
   const midLat = (lowLat + highLat) / 2;
   const midLng = (lowLng + highLng) / 2;
 
@@ -186,7 +203,7 @@ async function scanCell(
 
 // --- Main ---
 async function runWatcher(): Promise<void> {
-  console.log(`Scanning bounding box grid (${GRID_SIZE}x${GRID_SIZE}) with adaptive subdivision...`);
+  console.log(`Scanning bounding box grid (${GRID_SIZE}x${GRID_SIZE}) with adaptive subdivision (min depth ${MIN_CELL_DEPTH}, max depth ${MAX_CELL_DEPTH})...`);
   const allFound = new Map<string, Restaurant>();
 
   const latStep = (NE.lat - SW.lat) / GRID_SIZE;

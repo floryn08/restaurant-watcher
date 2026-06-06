@@ -53,6 +53,8 @@ All configuration is via environment variables. Copy `.env.example` to `.env` fo
 | `SW_LAT` / `SW_LNG` | Yes | — | South-west corner of the bounding box |
 | `NE_LAT` / `NE_LNG` | Yes | — | North-east corner of the bounding box |
 | `GRID_SIZE` | No | `3` | Number of grid cells per axis (higher = finer scan, more API calls) |
+| `MIN_CELL_DEPTH` | No | `0` | Force each grid cell to subdivide to this depth before saturation-based stopping |
+| `MAX_CELL_DEPTH` | No | `6` | Maximum subdivision depth for saturated cells |
 | `DATA_FILE` | No | `/data/city_center_registry.json` | Path for the persisted registry JSON |
 | `OLLAMA_HOST` | No | `http://localhost:11434` | Ollama base URL |
 | `OLLAMA_MODEL` | No | `llama3.2` | Ollama model to use for announcements |
@@ -61,7 +63,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` fo
 | `NOTIFY_ON_INITIAL_SCAN` | No | `false` | Set to `true` to announce every restaurant found on the first scan instead of only seeding the registry |
 | `DISCORD_WEBHOOK_URL` | No | — | Discord webhook URL — omit to skip notifications |
 
-> **Tip:** If a grid sector returns exactly 20 results, the script subdivides that cell because the Places API caps responses at 20. Increase `GRID_SIZE` for a finer initial scan, at the cost of more API calls.
+> **Tip:** Google Places Text Search is capped and relevance-ranked, so larger cells can miss restaurants even when they return fewer than 20 results. Increase `GRID_SIZE` or set `MIN_CELL_DEPTH=1` for denser coverage. Saturated cells still subdivide automatically until they stop returning 20 results or hit `MAX_CELL_DEPTH`.
 
 ---
 
@@ -119,6 +121,8 @@ The pod receives non-secret configuration from a ConfigMap. Secret values are wi
 | `activeDeadlineSeconds` | `1800` | Maximum runtime for each Job |
 | `ttlSecondsAfterFinished` | `86400` | How long completed Jobs are retained |
 | `config.*` | see `values.yaml` | Non-secret configuration |
+| `config.minCellDepth` | `0` | Forced subdivision depth before saturation-based stopping |
+| `config.maxCellDepth` | `6` | Maximum subdivision depth for saturated cells |
 | `vault.enabled` | `true` | Render the VaultStaticSecret and secret-backed environment variables |
 | `vault.mount` | `kv` | Vault KV mount |
 | `vault.path` | `utility-services/restaurant-watcher` | Path within the mount |

@@ -11,6 +11,8 @@ data:
   NE_LAT: {{ .Values.config.neLat | quote }}
   NE_LNG: {{ .Values.config.neLng | quote }}
   GRID_SIZE: {{ .Values.config.gridSize | quote }}
+  MIN_CELL_DEPTH: {{ .Values.config.minCellDepth | quote }}
+  MAX_CELL_DEPTH: {{ .Values.config.maxCellDepth | quote }}
   DATA_FILE: {{ .Values.config.dataFile | quote }}
   OLLAMA_HOST: {{ .Values.config.ollamaHost | quote }}
   OLLAMA_MODEL: {{ .Values.config.ollamaModel | quote }}
